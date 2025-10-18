@@ -6,7 +6,7 @@ Description
 
 Interactive network of users and friendships:
 
-CRUD users
+# CRUD users
 
 Link/unlink friendships
 
@@ -16,7 +16,7 @@ Popularity score affects node size & color
 
 Dynamic React Flow graph
 
-Tech Stack
+# Tech Stack
 
 Frontend: React + TS, Tailwind CSS, React Flow
 
@@ -27,21 +27,21 @@ Database: MongoDB
 State Management: React Context API
 
 
-Setup
+# Setup
 
-Backend
+# Backend
 
-cd backend
+ cd backend
 
-npm install
+ npm install
 
 # Create backend/.env:
 # PORT=5000
 # MONGO_URL=<your_mongo_connection_string>
 
-npm run dev
+ npm run dev
 
-Frontend
+# Frontend
 
 cd frontend
 
@@ -52,7 +52,7 @@ npm install
 
 npm run dev
 
-Usage
+# Usage
 
 Manage users via User Management Panel
 
@@ -62,7 +62,7 @@ Click edges to unlink friendships
 
 Drag hobbies from sidebar onto nodes
 
-API Endpoints
+# API Endpoints
 Method	Endpoint
 GET	/api/users
 POST	/api/users
