@@ -26,20 +26,30 @@ Database: MongoDB
 
 State Management: React Context API
 
+
 Setup
+
 Backend
+
 cd backend
+
 npm install
+
 # Create backend/.env:
 # PORT=5000
 # MONGO_URL=<your_mongo_connection_string>
+
 npm run dev
 
 Frontend
+
 cd frontend
+
 npm install
+
 # Create frontend/.env:
 # VITE_API_URL=http://localhost:5000/api
+
 npm run dev
 
 Usage
