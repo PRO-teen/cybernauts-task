@@ -34,11 +34,11 @@ export const createUser = async (req: Request, res: Response) => {
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       // TS now recognizes `errors`
-      console.error("Validation failed:", error.errors);
+      console.error("Validation failed:", error.format());
 
       return res.status(400).json({
         message: "Validation error",
-        errors: error.errors,
+        errors: error.format(),
       });
     }
 
