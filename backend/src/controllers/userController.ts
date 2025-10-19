@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { z, ZodError } from "zod";
+import { z } from "zod";
 import { User } from "../model/User";
 import { userSchema } from "../validation/userValidation";
 import { calculatePopularityScore } from "../utils/helpers";
@@ -23,7 +23,6 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const parsed = userSchema.parse(req.body);
 
-    // Normalize hobbies
     if (parsed.hobbies) {
       parsed.hobbies = normalizeHobbies(parsed.hobbies);
     }
@@ -33,8 +32,8 @@ export const createUser = async (req: Request, res: Response) => {
 
     res.status(201).json(newUser);
   } catch (error: unknown) {
-    if (error instanceof ZodError) {
-      // TS now knows `errors` exists
+    if (error instanceof z.ZodError) {
+      // TS now recognizes `errors`
       console.error("Validation failed:", error.errors);
 
       return res.status(400).json({
@@ -47,6 +46,7 @@ export const createUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // PUT /api/users/:id
 export const updateUser = async (req: Request, res: Response) => {
