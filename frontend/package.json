@@ -4,11 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
+  "dev": "ts-node-dev --respawn --transpile-only src/server.ts", 
+  "build": "tsc --build tsconfig.json",
+  "start": "npm run build && node dist/src/server.js"
+},
   "dependencies": {
     "@mantine/core": "^8.3.5",
     "@mantine/hooks": "^8.3.5",

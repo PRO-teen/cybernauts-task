@@ -2,9 +2,32 @@ User Relationship & Hobby Network
 
 Full-Stack Project – React + TypeScript (Frontend), Node.js + Express + MongoDB (Backend)
 
-Description
+# Description
+-Interactive network of users and friendships:
 
-Interactive network of users and friendships:
+## functionalities
+
+### 1. User Graph Visualization
+- Each **node** represents a user.
+- Each **edge** represents a relationship between users.
+- Users with higher popularity scores are highlighted with distinct colors
+
+
+
+### 2. Interactive Relationship Management
+- **Link nodes**: Add and connect users to create relationships.
+- **Unlink edges**: Click on an edge to remove the relationship.
+
+### 3. Drag & Drop Hobbies
+- Assign hobbies to users by dragging and dropping options onto their nodes.
+- Updates are reflected in real-time.
+
+### 4. User Management
+- **Create, Edit, Delete** users through an intuitive interface.
+- All changes are automatically updated in the graph.
+
+### 5. Popularity Highlight
+- Users with the highest popularity scores are visually distinguished using color-coding.
 
 # CRUD users
 

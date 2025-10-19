@@ -2,21 +2,22 @@ import React, { useEffect, useState } from "react";
 import ReactFlow, { Background, Controls,Handle, Position } from "reactflow";
 import type  { Node,Edge } from "reactflow";
 import "reactflow/dist/style.css";
-import axios from "axios";
 import UserInfoCard from "./UserInfoCard";
+import { useUserContext } from "../context/UserContext";
 
 interface GraphProps {
   allUsers: any[];
 }
 
 const Graph: React.FC<GraphProps> = ({ allUsers }) => {
+  const { fetchUsers, linkUsers, unlinkUsers, updateUser } = useUserContext();
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const maxPopularity = Math.max(...allUsers.map((u) => u.popularityScore), 1);
 
-  // ---------------- Graph Nodes & Edges ----------------
+  // Build Graph Nodes and Edges
   useEffect(() => {
     const newNodes: Node[] = allUsers.map((user, index) => {
       const intensity = user.popularityScore / maxPopularity;
@@ -29,19 +30,8 @@ const Graph: React.FC<GraphProps> = ({ allUsers }) => {
           label: (
             <div className="flex flex-col items-center justify-center w-full h-full">
               <div>{user.username} ({user.age})</div>
-              {/* ReactFlow Handles for Friendship */}
-              <Handle
-                type="source"
-                position={Position.Right}
-                id="source"
-                style={{ background: "#555" }}
-              />
-              <Handle
-                type="target"
-                position={Position.Left}
-                id="target"
-                style={{ background: "#555" }}
-              />
+              <Handle type="source" position={Position.Right} id="source" style={{ background: "#555" }} />
+              <Handle type="target" position={Position.Left} id="target" style={{ background: "#555" }} />
             </div>
           ),
           user,
@@ -80,110 +70,84 @@ const Graph: React.FC<GraphProps> = ({ allUsers }) => {
     setEdges(newEdges);
   }, [allUsers]);
 
-  // ---------------- Container Drop for Sidebar Hobby ----------------
-  // ---------------- Container Drop for Sidebar Hobby ----------------
-const handleDrop = async (event: React.DragEvent) => {
-  event.preventDefault();
-  const hobby = event.dataTransfer.getData("hobby");
-  if (!hobby) return;
+  // Handle Hobby Drop
+  const handleDrop = async (event: React.DragEvent) => {
+    event.preventDefault();
+    const hobby = event.dataTransfer.getData("hobby");
+    if (!hobby) return;
 
-  const bounds = event.currentTarget.getBoundingClientRect();
-  const x = event.clientX - bounds.left;
-  const y = event.clientY - bounds.top;
+    const elements = document.elementsFromPoint(event.clientX, event.clientY);
+    const nodeElement = elements.find(el => el.classList.contains("react-flow__node"));
+    if (!nodeElement) return;
 
-  // find the node (user) the hobby was dropped on
-  const elements = document.elementsFromPoint(event.clientX, event.clientY);
-  const nodeElement = elements.find(el => el.classList.contains("react-flow__node"));
-  if (!nodeElement) return;
+    const nodeId = nodeElement.getAttribute("data-id");
+    if (!nodeId) return;
 
-  const nodeId = nodeElement.getAttribute("data-id");
-  if (!nodeId) return;
+    const droppedUser = allUsers.find(u => u._id === nodeId);
+    if (!droppedUser) return;
 
-  try {
-    // fetch the user first (optional, but ensures latest hobbies)
-    const { data: user } = await axios.get(`http://localhost:5000/api/users`);
-    const selectedUser = user.find((u: any) => u._id === nodeId);
-    if (!selectedUser) return;
-
-    // if the hobby already exists, prevent duplicates
-    if (selectedUser.hobbies.includes(hobby)) {
-      alert(`${selectedUser.username} already has "${hobby}" hobby.`);
+    if (droppedUser.hobbies.includes(hobby)) {
+      alert(`${droppedUser.username} already has "${hobby}" hobby.`);
       return;
     }
 
-    // update the user’s hobbies
-    const updatedHobbies = [...selectedUser.hobbies, hobby];
-    await axios.put(`http://localhost:5000/api/users/${selectedUser._id}`, {
-      ...selectedUser,
-      hobbies: updatedHobbies,
-    });
+    const updatedHobbies = [...droppedUser.hobbies, hobby];
 
-    alert(`Added "${hobby}" to ${selectedUser.username}`);
-    window.location.reload(); // refresh to update graph colors/scores
-  } catch (err) {
-    console.error("Error adding hobby:", err);
-    alert("Failed to add hobby");
-  }
-};
-
+    try {
+      await updateUser(droppedUser._id, { hobbies: updatedHobbies });
+      alert(`Added "${hobby}" to ${droppedUser.username}`);
+      await fetchUsers(); // refresh context data
+    } catch (err) {
+      console.error("Error adding hobby:", err);
+      alert("Failed to add hobby");
+    }
+  };
 
   const handleDragOver = (event: React.DragEvent) => event.preventDefault();
 
-  return (
-    <div className="w-full h-full bg-gray-900 relative" onDrop={handleDrop} onDragOver={handleDragOver}>
-      <ReactFlow
-  nodes={nodes}
-  edges={edges}
-  onNodeClick={(_, node) => setSelectedUser(node.data.user)}
-  onConnect={async (params: any) => {
+  // Handle Connect (Friendship)
+  const handleConnect = async (params: any) => {
     const { source, target } = params;
     if (!source || !target) return;
 
     try {
-      await axios.post(
-        `http://localhost:5000/api/users/${source}/link`,
-        { friendId: target },
-        { headers: { "Content-Type": "application/json" } }
-      );
-      window.location.reload();
+      await linkUsers(source, target);
+      alert("Users linked successfully!");
     } catch (err: any) {
       if (err.response?.status === 409) alert("Users are already linked!");
       else alert("Failed to create friendship.");
     }
-  }}
+  };
 
-  onEdgeClick={async (event, edge) => {
-  if (!edge) {
-    console.warn("Edge is undefined");
-    return;
-  }
-  const { source, target } = edge;
-  console.log("Clicked edge:", source, target);
+  // Handle Unlink (Edge Click)
+  const handleEdgeClick = async (_event: any, edge: any) => {
+    const { source, target } = edge;
+    const confirmUnlink = window.confirm("Do you want to unlink these users?");
+    if (!confirmUnlink) return;
 
-  if (!source || !target) return;
+    try {
+      await unlinkUsers(source, target);
+      alert("Unlinked successfully!");
+    } catch (err) {
+      console.error("Failed to unlink:", err);
+      alert("Failed to unlink friendship.");
+    }
+  };
 
-  const confirmUnlink = window.confirm("Do you want to unlink these users?");
-  if (!confirmUnlink) return;
-
-  try {
-    await axios.delete(
-      `http://localhost:5000/api/users/${source}/unlink`,
-      {
-        data: { friendId: target },
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-    alert("Unlinked successfully!");
-    window.location.reload();
-  } catch (err) {
-    console.error("Failed to unlink:", err.response || err);
-    alert("Failed to unlink friendship.");
-  }
-}}
-
-  fitView
->
-
+  return (
+    <div
+      className="w-full h-full bg-gray-900 relative"
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+    >
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodeClick={(_, node) => setSelectedUser(node.data.user)}
+        onConnect={handleConnect}
+        onEdgeClick={handleEdgeClick}
+        fitView
+      >
         <Background color="#444" gap={16} />
         <Controls showZoom={false} />
       </ReactFlow>
