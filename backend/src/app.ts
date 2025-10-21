@@ -10,7 +10,7 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: ["https://cybernauts-task-git-main-ayush-yadavs-projects-ae02f4a6.vercel.app"],
+    origin: ["https://cybernauts-task.vercel.app"],
     credentials: true,
   })
 );
