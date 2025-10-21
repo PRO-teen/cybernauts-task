@@ -10,11 +10,14 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: [
+      "http://localhost:5173", // for local dev
+      "https://cybernauts-task.vercel.app", // your Vercel frontend
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
-app.use(express.json());
 
 // User API routes
 app.use("/api/users", userRoutes);
