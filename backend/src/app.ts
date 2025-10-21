@@ -10,7 +10,7 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: ["https://cybernauts-task.vercel.app"],
+    origin: process.env.FRONTEND_URL,
     credentials: true,
   })
 );
