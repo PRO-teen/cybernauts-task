@@ -10,18 +10,15 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://cybernauts-task.vercel.app",
-      "https://cybernauts-task-git-main-ayush-yadavs-projects-ae02f4a6.vercel.app",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: ["https://cybernauts-task-git-main-ayush-yadavs-projects-ae02f4a6.vercel.app"],
     credentials: true,
   })
 );
 
 
-// User API routes
+app.use(express.json());
+
+
 app.use("/api/users", userRoutes);
 app.use("/api/users", relationshipRoutes);
 
